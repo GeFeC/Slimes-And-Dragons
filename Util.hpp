@@ -39,6 +39,10 @@ namespace util{
     return static_cast<std::int32_t>(t);
   }
 
+  static auto format(const std::string& text) noexcept{
+    return text;
+  }
+
   template<typename T, typename... Targs>
   static auto format(const std::string& text, const T& t, const Targs&... args) noexcept -> std::string{
     if (auto pos = text.find("{}"); pos != std::string::npos){
@@ -48,10 +52,6 @@ namespace util{
       return util::format(stream.str(), args...);
     }
 
-    return text;
-  }
-
-  static auto format(const std::string& text) noexcept{
     return text;
   }
 

@@ -2,42 +2,35 @@
 #include "../Util.hpp"
 
 Monster::Monster(Type type, std::int32_t level) noexcept{
+  this->name = Monster::getNameByType(type);
+  this->level = level;
+
   switch(type){
     case Type::SLIME:
-      this->name = "SLIME";
-      this->level = level;
       this->droppedGoldCount = util::getRandomValue(10, 20) + util::getSumOfRandomValues(level, 3, 4);
       this->hp = this->maxHp = 10 + util::getSumOfRandomValues(level, 3, 4);
       this->damage = util::getSumOfRandomValues(level, 2, 3);
       break;
 
     case Type::ZOMBIE:
-      this->name = "ZOMBIE";
-      this->level = level;
       this->droppedGoldCount = util::getRandomValue(20, 30) + util::getSumOfRandomValues(level, 4, 5);
       this->hp = this->maxHp = 10 + util::getSumOfRandomValues(level, 4, 5);
       this->damage = util::getSumOfRandomValues(level, 2, 3);
       break;
 
     case Type::ORC:
-      this->name = "ORC";
-      this->level = level;
       this->droppedGoldCount = util::getRandomValue(30, 40) + util::getSumOfRandomValues(level, 6, 7);
       this->hp = this->maxHp = 20 + util::getSumOfRandomValues(level, 6, 7);
       this->damage = util::getSumOfRandomValues(level, 3, 4);
       break;
 
     case Type::OGRE:
-      this->name = "OGRE";
-      this->level = level;
       this->droppedGoldCount = util::getRandomValue(40, 50) + util::getSumOfRandomValues(level, 8, 9);
       this->hp = this->maxHp = 20 + util::getSumOfRandomValues(level, 8, 9);
       this->damage = util::getSumOfRandomValues(level, 4, 5);
       break;
 
     case Type::DRAGON:
-      this->name = "DRAGON";
-      this->level = level;
       this->droppedGoldCount = util::getRandomValue(50, 60) + util::getSumOfRandomValues(level, 10, 12);
       this->hp = this->maxHp = 30 + util::getSumOfRandomValues(level, 10, 12);
       this->damage = util::getSumOfRandomValues(level, 5, 6);

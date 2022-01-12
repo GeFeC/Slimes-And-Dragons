@@ -1,5 +1,10 @@
 #include "Player.hpp"
 
+Player::Player() noexcept{
+  this->damage = Player::INITIAL_DAMAGE;
+  this->hp = this->maxHp = Player::INITIAL_MAX_HP;
+}
+
 auto Player::printBasicStats() const noexcept -> void{
   util::print("\n<{}lvl {}/{}hp {}/{}xp {}gold> ", 
     this->level, this->hp, this->maxHp, this->xp, this->neededXpForLevelUp, this->gold);
@@ -24,8 +29,9 @@ auto Player::handleRest() noexcept -> void{
   const auto restStop = util::getCurrentTimePoint();
 
   auto regainedHp = std::chrono::duration_cast<std::chrono::seconds>(restStop - restStart).count();
- 
-  if (this->hp + regainedHp > this->maxHp)
+  const auto didRegainMoreHpThanNeeded = (this->hp + regainedHp > this->maxHp);
+
+  if (didRegainMoreHpThanNeeded)
     regainedHp = this->maxHp - this->hp;
 
   this->hp += regainedHp;
@@ -36,9 +42,9 @@ auto Player::handleHeal() noexcept -> void{
   util::print("\n1hp -> 5gold\n");
   auto wantedHp = util::getInput<std::int32_t>("How much health do you want to regain? 0 for full: ");
 
-  const auto userEnteredTooBigValue = this->hp + wantedHp > this->maxHp;
+  const auto didUserEnterTooBigValue = this->hp + wantedHp > this->maxHp;
 
-  if (wantedHp == 0 || userEnteredTooBigValue){
+  if (wantedHp == 0 || didUserEnterTooBigValue){
     wantedHp = this->maxHp - this->hp;
   }
 
@@ -155,17 +161,24 @@ auto Player::decreaseDrunkPotionUsage() noexcept -> void{
     this->clearPotionEffect();
 }
 
+auto Player::clearPotionEffect() noexcept -> void{
+  if (this->drunkPotion.type == Potion::Type::NONE)
+    return;
+
+  this->drunkPotion.type = Potion::Type::NONE;
+  util::print("POTION EFFECT WORE OFF!\n");
+}
+
 auto Player::handleAttack(Monster& attackedMonster) noexcept -> bool{
   auto damage = this->damage;
 
   util::print("\n");
 
-  const auto randomValue = util::getRandomValue(0, 9);
-  const auto criticalHitOccured = 
+  const auto didCriticalHitOccur = 
     (this->drunkPotion.type == Potion::Type::CRITICAL) ? 
-    randomValue < 5 : randomValue < 1;
+    util::passWithChanceOf(50) : util::passWithChanceOf(10);
 
-  if (criticalHitOccured){
+  if (didCriticalHitOccur){
     util::print("CRITICAL HIT!\n");
     damage *= 2;
   }
@@ -220,12 +233,4 @@ auto Player::handleLevelUp() noexcept -> void{
 
   util::print("\nYou advanced to level {}!\n", this->level);
   util::print("You gain {} gold!\n", this->level * Player::GOLD_RECEIVED_PER_LEVEL);
-}
-
-auto Player::clearPotionEffect() noexcept -> void{
-  if (this->drunkPotion.type == Potion::Type::NONE)
-    return;
-
-  this->drunkPotion.type = Potion::Type::NONE;
-  util::print("POTION EFFECT WORE OFF!\n");
 }

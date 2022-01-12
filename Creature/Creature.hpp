@@ -16,10 +16,7 @@ public:
   std::int32_t maxHp = 10;
   std::int32_t damage;
 
-  Creature(const std::string& name, std::int32_t hp, std::int32_t damage, std::int32_t droppedGoldCount) noexcept
-  : name(name), hp(hp), maxHp(hp), damage(damage) {}
-
-  Creature() noexcept {}
+  Creature() = default;
 
   auto printHpBar() const noexcept -> void;
 

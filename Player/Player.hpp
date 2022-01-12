@@ -15,6 +15,8 @@ private:
   static constexpr float STRENGTH_POTION_BOOST = 0.3;
   static constexpr float HP_POTION_BOOST = 0.3;
 
+  static constexpr std::int32_t INITIAL_DAMAGE = 5;
+  static constexpr std::int32_t INITIAL_MAX_HP = 20;
   static constexpr std::int32_t ONE_HP_COST = 5;
   static constexpr std::int32_t GOLD_RECEIVED_PER_LEVEL = 20;
   static constexpr std::int32_t INITIAL_POTION_USAGES_COUNT = 3;
@@ -35,7 +37,7 @@ public:
 
   Potion drunkPotion = { Potion::Type::NONE };
 
-  Player() : Creature(name, 20, 5, 0) {}
+  Player() noexcept;
 
   auto handleLevelUp() noexcept -> void;
   auto handleRest() noexcept -> void;

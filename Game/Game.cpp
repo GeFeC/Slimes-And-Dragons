@@ -5,7 +5,7 @@ auto Game::run() noexcept -> void{
   this->_askForPlayerName();
   this->_askForShowingRules();
 
-  while(true)
+  while(!this->gameOver)
     this->_handleMainInterface();
 }
 
@@ -15,8 +15,7 @@ auto Game::_printTitle() const noexcept -> void{
 }
 
 auto Game::_askForPlayerName() noexcept -> void{
-  util::print("Enter your name: ");
-  this->player.name = util::getInput();
+  this->player.name = util::getInput("Enter your name: ");
 
   util::print("Welcome, {}!\n", this->player.name);
 }
@@ -131,11 +130,11 @@ auto Game::_handleAttack() noexcept -> void{
 }
 
 auto Game::_didBossSpawn() const noexcept -> bool{
-  const auto chanceOfBossSpawning = this->player.level;
+  const auto chanceForBossToSpawn = this->player.level;
 
   return 
-    this->player.level >= Game::MIN_PLAYER_LEVEL_FOR_BOSS_SPAWNING && 
-    util::passWithChanceOf(chanceOfBossSpawning);
+    this->player.level >= Game::MIN_PLAYER_LEVEL_FOR_BOSS_TO_SPAWN && 
+    util::passWithChanceOf(chanceForBossToSpawn);
 }
 
 auto Game::_handleBossEncountering() noexcept -> void{
@@ -143,8 +142,8 @@ auto Game::_handleBossEncountering() noexcept -> void{
   auto boss = this->_generateBoss();
 
   this->_handleFightScene(boss);
-  util::print("CONGRATULATIONS! YOU DEFEATED THE FINAL BOSS AND WON THE GAME!\n\n");
-  while(true);
+  util::printAndWait("CONGRATULATIONS! YOU DEFEATED THE FINAL BOSS AND WON THE GAME!\n\n");
+  this->gameOver = true;
 }
 
 auto Game::_generateBoss() const noexcept -> Monster{
@@ -190,10 +189,13 @@ auto Game::_getRandomMonster() noexcept -> std::pair<Monster::Type, std::int32_t
   const auto monsterTypeId = util::getRandomValue(0, static_cast<std::int32_t>(Monster::Type::TYPES_COUNT) - 1);
   const auto monsterLevel = util::getRandomValue(
     (this->player.level < 6) ? 1 : this->player.level - 5, 
-    1 + this->player.level + (this->player.level / 3)
+    this->player.level + (this->player.level / 3) + 1
   );
   
-  return { static_cast<Monster::Type>(monsterTypeId), monsterLevel };
+  return { 
+    static_cast<Monster::Type>(monsterTypeId), 
+    monsterLevel 
+  };
 };
 
 auto Game::_printCurrentlyEncounteredMonsters() const noexcept -> void{
@@ -221,21 +223,24 @@ auto Game::_handleFightScene(Monster& attackedMonster) noexcept -> void{
     this->_printStatsDuringBattle(attackedMonster);
 
     const auto choice = util::getInput<char>("Type 'r' to run, or any other key to fight: ");
-    const auto playerWantsToFlee = (choice == 'r' || choice == 'R');
-    const auto successfullyFled = util::getRandomValue(0, 1) == 0;
+    const auto doesPlayerWantToFlee = (choice == 'r' || choice == 'R');
+    const auto didSuccessfullyFlee = util::passWithChanceOf(Game::CHANCE_FOR_PLAYER_TO_FLEE);
 
-    if (playerWantsToFlee){
-      if (successfullyFled){
+    if (doesPlayerWantToFlee){
+      if (didSuccessfullyFlee){
         util::print("You fled successfully!\n");
         break;
       }
+
+      util::print("Failed to flee!\n");
     }
     else{
       if (this->player.handleAttack(attackedMonster) == Player::KILLED_MONSTER)
         break;
     }
 
-    this->_handleMonsterAttack(attackedMonster);
+    if (this->_handleMonsterAttack(attackedMonster) == Game::MONSTER_KILLED_PLAYER)
+      return;
   }
 
   if (this->player.drunkPotion.type != Potion::Type::NONE){
@@ -259,8 +264,8 @@ auto Game::_handleMonsterAttack(Monster& attackingMonster) noexcept -> bool{
   this->player.hp -= attackingMonster.damage;
 
   if (this->player.isDead()){
-    util::print("GAME OVER!\n");
-    while(true);
+    util::printAndWait("GAME OVER!\n");
+    this->gameOver = true;
     
     return Game::MONSTER_KILLED_PLAYER;
   }
@@ -271,13 +276,12 @@ auto Game::_handleMonsterAttack(Monster& attackingMonster) noexcept -> bool{
 auto Game::_handlePlayerRest() noexcept -> void{
   this->player.handleRest();
 
-  if (util::getRandomValue(0, 9) < 3){
+  if (util::passWithChanceOf(Game::CHANCE_OF_BEING_ATTACKED_AFTER_REST)){
     util::print("Some monster attacks you while you're resting!\n\n");
-    const auto [monsterType, monsterId] = this->_getRandomMonster();
+    const auto [monsterType, monsterLevel] = this->_getRandomMonster();
+    auto monster = Monster(monsterType, monsterLevel);
 
-    this->currentlyEncounteredMonsters.emplace_back(monsterType, monsterId);
-
-    this->_handleFightScene(this->currentlyEncounteredMonsters[0]);
+    this->_handleFightScene(monster);
   }
 }
 

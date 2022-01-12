@@ -18,13 +18,18 @@ private:
   static constexpr bool MONSTER_KILLED_PLAYER = true;
   static constexpr bool MONSTER_DIDNT_KILL_PLAYER = false;
 
-  static constexpr std::int32_t MIN_PLAYER_LEVEL_FOR_BOSS_SPAWNING = 20;
+  static constexpr std::int32_t MIN_PLAYER_LEVEL_FOR_BOSS_TO_SPAWN = 20;
   static constexpr std::int32_t BOSS_DROPPED_GOLD_COUNT = 10000;
   static constexpr std::int32_t BOSS_MAX_HP_BOOST = 50;
   static constexpr std::int32_t BOSS_DAMAGE_BOOST = 20;
+
   static constexpr std::int32_t MIN_SPAWNED_MONSTERS_COUNT = 6;
   static constexpr std::int32_t MAX_SPAWNED_MONSTERS_COUNT = 12;
 
+  static constexpr std::int32_t CHANCE_FOR_PLAYER_TO_FLEE = 50;
+  static constexpr std::int32_t CHANCE_OF_BEING_ATTACKED_AFTER_REST = 30;
+
+  bool gameOver = false;
   Player player;
 
   std::vector<Monster> currentlyEncounteredMonsters;
